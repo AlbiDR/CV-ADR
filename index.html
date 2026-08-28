@@ -121,7 +121,10 @@
   html{ color-scheme:light dark; }
 
   body{
-    background:var(--color-shell-bg);
+    /* A soft vignette instead of a flat shell color - purely a
+       screen backdrop behind the page, never part of the page
+       content itself, so it carries zero print/export risk. */
+    background:radial-gradient(ellipse 1000px 800px at 50% -10%, var(--color-page-bg) 0%, var(--color-shell-bg) 100%);
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,"Segoe UI",sans-serif;
     color:var(--color-ink);
     display:flex;
@@ -193,7 +196,19 @@
   /* =========================================================
      4. HEADER
      ========================================================= */
-  .cv-page__header{ grid-column:1 / -1; margin-bottom:var(--col-gap); }
+  /* A hairline drawn via box-shadow rather than border-bottom - it
+     paints without adding to the header's box height, so the header
+     keeps the exact same footprint (critical: the page content
+     already fills exactly one A4 sheet with zero spare height - see
+     section 11). The --col-gap budget is split between padding
+     (breathing room above the line) and margin (below it) so the
+     total stays unchanged. */
+  .cv-page__header{
+    grid-column:1 / -1;
+    padding-bottom:2mm;
+    margin-bottom:calc(var(--col-gap) - 2mm);
+    box-shadow:0 1px 0 0 var(--color-divider);
+  }
 
   .cv-page__name{
     margin:0 0 var(--sp-2) 0;
@@ -214,6 +229,22 @@
   .section{ margin-bottom:var(--section-gap); }
   .col-left  > .section:last-child,
   .col-right > .section:last-child{ margin-bottom:0; }
+
+  /* A hairline column divider, absolutely positioned so it never
+     participates in layout height. .col-left and .col-right both
+     stretch to the row's height already (grid's default
+     align-items:stretch), so anchoring the line to .col-left's own
+     0%-100% box always spans the taller of the two columns. */
+  .col-left{ position:relative; }
+  .col-left::after{
+    content:'';
+    position:absolute;
+    top:0;
+    bottom:0;
+    right:calc(var(--col-gap) / -2);
+    width:1px;
+    background:var(--color-divider);
+  }
 
   .section__title{
     font-size:var(--fs-section);
@@ -252,7 +283,7 @@
   }
   .entry__meta-item{ display:flex; align-items:center; gap:var(--sp-2); white-space:nowrap; }
 
-  .entry__tagline{ font-size:var(--fs-base); margin:0 0 var(--sp-2) 0; }
+  .entry__tagline,
   .entry__course{ font-size:var(--fs-base); margin:0 0 var(--sp-2) 0; }
   .entry__course-value{ font-style:italic; }
 
@@ -306,6 +337,11 @@
     border-radius:999px;
     background:var(--color-chip-bg);
     color:var(--color-ink);
+    /* Inset shadow instead of border - adds definition to the chip
+       edge without changing its box size (a real border would grow
+       the chip by its own width under content-box sizing quirks in
+       some engines; inset shadow never does). */
+    box-shadow:inset 0 0 0 1px var(--color-divider);
     print-color-adjust:exact;
     -webkit-print-color-adjust:exact;
   }
@@ -338,22 +374,23 @@
   /* =========================================================
      10. CONTROLS (screen-only - theme toggle + PDF export)
      ========================================================= */
-  /* The language switch sits above the export button rather than
-     beside it, so the three controls trace a corner around the
-     viewport's bottom-right edge instead of a straight row. */
+  /* Theme toggle and language switch sit side by side on top, the
+     export button spans full-width below - three controls tracing a
+     corner around the viewport's bottom-right edge. */
   .controls{
     position:fixed;
     right:var(--sp-8);
     bottom:var(--sp-8);
     display:flex;
-    align-items:flex-end;
+    flex-direction:column;
+    align-items:stretch;
     gap:var(--sp-4);
     z-index:100;
   }
-  .controls__stack{
+  .controls__row{
     display:flex;
-    flex-direction:column;
     align-items:flex-end;
+    justify-content:space-between;
     gap:var(--sp-4);
   }
   .control-btn{
@@ -954,21 +991,21 @@
 
 <!-- Screen-only controls - hidden in print via @media print above -->
 <div class="controls">
-  <button type="button" class="control-btn control-btn--icon" id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
-    <svg class="icon icon-sun" aria-hidden="true"><use href="#icon-sun"/></svg>
-    <svg class="icon icon-moon" aria-hidden="true"><use href="#icon-moon"/></svg>
-  </button>
-  <div class="controls__stack">
+  <div class="controls__row">
+    <button type="button" class="control-btn control-btn--icon" id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
+      <svg class="icon icon-sun" aria-hidden="true"><use href="#icon-sun"/></svg>
+      <svg class="icon icon-moon" aria-hidden="true"><use href="#icon-moon"/></svg>
+    </button>
     <button type="button" class="lang-switch" id="lang-toggle">
       <span class="lang-switch__thumb" aria-hidden="true"></span>
       <span class="lang-switch__option" data-lang="it" aria-hidden="true">IT</span>
       <span class="lang-switch__option" data-lang="en" aria-hidden="true">EN</span>
     </button>
-    <button type="button" class="control-btn control-btn--primary" id="export-pdf">
-      <svg class="icon" aria-hidden="true"><use href="#icon-export"/></svg>
-      Export PDF
-    </button>
   </div>
+  <button type="button" class="control-btn control-btn--primary" id="export-pdf">
+    <svg class="icon" aria-hidden="true"><use href="#icon-export"/></svg>
+    Export PDF
+  </button>
 </div>
 
 <script>
