@@ -540,7 +540,12 @@
        ambiguity regardless of OS or printer defaults. */
     @page{ size:A4; margin:0; }
     body{ background:var(--color-shell-bg); padding:0; gap:0; }
-    .cv-page{ box-shadow:none; margin:0; }
+    /* The mobile fit-to-viewport script (section 13) shrinks the page
+       with a transform on narrow screens - never let that leak into
+       print/export, which must always render the page at true A4
+       scale regardless of the device that triggered it. */
+    main{ width:auto !important; height:auto !important; }
+    .cv-page{ box-shadow:none; margin:0; transform:none !important; }
     /* A page break is placed BEFORE every page that follows another,
        rather than AFTER every page but the last. The break-after
        approach (page-1 { break-after: always }, override on
@@ -1123,6 +1128,55 @@
     exportBtn.addEventListener('click', function(){
       window.print();
     });
+  })();
+</script>
+
+<!-- =========================================================
+     13. MOBILE FIT-TO-VIEWPORT (screen-only)
+     The page is a fixed physical A4 sheet (~794px wide) - correct
+     for print/export, but wider than most phones. Without this, a
+     narrow viewport doesn't reflow the page (it has no responsive
+     layout to reflow to) - it just clips it, showing an arbitrary
+     crop of the top-left corner. This scales the whole page down
+     to fit the viewport instead, exactly like "zoom to fit" would.
+     transform doesn't affect layout size, so <main> is resized to
+     match the scaled visual footprint - otherwise the document
+     would keep the page's full unscaled width/height reserved,
+     leaving dead space around the now-smaller page. Reset entirely
+     (and never applied at all in @media print - see section 12)
+     whenever the viewport is already wide enough to show the page
+     at 100%. -->
+<script>
+  (function(){
+    var root = document.documentElement;
+    var main = document.querySelector('main');
+
+    function fitPageToViewport(){
+      var page = document.querySelector('.cv-page[lang="' + root.getAttribute('data-lang') + '"]');
+      if(!page) return;
+      // offsetWidth/Height are the element's own layout-box size,
+      // unaffected by any transform already applied to it - safe to
+      // read even after a previous call scaled this same element.
+      var pageW = page.offsetWidth;
+      var pageH = page.offsetHeight;
+      var margin = 24;
+      var scale = Math.min(1, (window.innerWidth - margin) / pageW);
+      if(scale >= 1){
+        page.style.transform = '';
+        main.style.width = '';
+        main.style.height = '';
+      }else{
+        page.style.transformOrigin = 'top left';
+        page.style.transform = 'scale(' + scale + ')';
+        main.style.width = (pageW * scale) + 'px';
+        main.style.height = (pageH * scale) + 'px';
+      }
+    }
+
+    window.addEventListener('resize', fitPageToViewport);
+    window.addEventListener('orientationchange', fitPageToViewport);
+    document.getElementById('lang-toggle').addEventListener('click', fitPageToViewport);
+    fitPageToViewport();
   })();
 </script>
 
