@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alberto Di Rosa - CV</title>
+<script>
+  // Applied synchronously, before first paint, so the page never
+  // flashes the wrong theme or language on load.
+  (function(){
+    var root = document.documentElement;
+    try{
+      var savedTheme = localStorage.getItem('adr-cv-theme');
+      if(savedTheme === 'dark'){ root.setAttribute('data-theme','dark'); }
+    }catch(e){ /* localStorage unavailable - default light theme stands */ }
+    try{
+      var savedLang = localStorage.getItem('adr-cv-lang') === 'en' ? 'en' : 'it';
+      root.setAttribute('data-lang', savedLang);
+      root.lang = savedLang;
+    }catch(e){ root.setAttribute('data-lang','it'); }
+  })();
+</script>
+<style>
+  /* =========================================================
+     1. DESIGN TOKENS (Single Source of Truth)
+     No magic numbers below this block - every value used in
+     the document is a reference to a token defined here.
+     ========================================================= */
+  :root{
+    /* Color */
+    --color-ink:          #17181c;
+    --color-rule:         #17181c;
+    --color-accent:       #2b4fee;
+    --color-accent-light: #6c8bff;
+    --color-muted:        #55585f;
+    --color-track:        #d7d9de;
+    --color-track-tint:   #e8ecff;
+    --color-chip-bg:      #eef1fd;
+    --color-divider:      #d5d7dc;
+    --color-page-bg:      #ffffff;
+    --color-shell-bg:     #eaecf1;
+    --color-btn-bg:       #ffffff;
+    --color-btn-border:   #d5d7dc;
+
+    /* Type scale (px) */
+    --fs-name:      31px;
+    --fs-section:   14.5px;
+    --fs-entry:     13px;
+    --fs-org:       12px;
+    --fs-body:      11.6px;
+    --fs-base:      11.4px;
+    --fs-meta:      10.6px;
+    --fs-small:     10.8px;
+    --fs-tiny:      9.6px;
+
+    /* Spacing scale (px) - strict 2px base grid, every
+       margin/padding/gap in the document resolves to one of
+       these steps. No off-grid values anywhere below. */
+    --sp-1: 2px;
+    --sp-2: 4px;
+    --sp-3: 6px;
+    --sp-4: 8px;
+    --sp-5: 10px;
+    --sp-6: 12px;
+    --sp-7: 14px;
+    --sp-8: 16px;
+
+    /* Physical page geometry (mm - print-accurate units) */
+    --page-w:        210mm;
+    --page-h:        297mm;
+    --page-pad-y:    9mm;
+    --page-pad-x:    13mm;
+    --col-gap:       6mm;
+    --sidebar-w:     64mm;
+    --section-gap:   3mm;
+    --entry-gap:     3mm;
+
+    /* Component metrics */
+    --icon-lg:       13px;
+    --icon-sm:       11px;
+  }
+
+  /* Dark theme - a straight color-token swap only. Nothing that
+     affects box size, padding, or line-height lives here, so the
+     dark palette can never disturb the alignment the light palette
+     already establishes. */
+  :root[data-theme="dark"]{
+    --color-ink:          #eceef2;
+    --color-rule:         #eceef2;
+    --color-accent:       #6c8bff;
+    --color-accent-light: #a6b8ff;
+    --color-muted:        #9aa0ac;
+    --color-track:        #33363f;
+    --color-track-tint:   rgba(108,139,255,.16);
+    --color-chip-bg:      rgba(108,139,255,.14);
+    --color-divider:      #33363f;
+    --color-page-bg:      #16171c;
+    --color-shell-bg:     #0b0c0f;
+    --color-btn-bg:       #1e2027;
+    --color-btn-border:   #34363f;
+  }
+
+  *,
+  *::before,
+  *::after{ box-sizing:border-box; }
+
+  html,body{ margin:0; padding:0; }
+
+  /* The browser's default UA stylesheet gives <p> a 1em vertical
+     margin. Several semantic labels below are marked up as <p>
+     rather than <div> for accessibility; zeroing the default here
+     means every margin seen on screen is one this stylesheet set
+     on purpose, not one inherited silently. */
+  p{ margin:0; }
+
+  html{ color-scheme:light dark; }
+
+  body{
+    background:var(--color-shell-bg);
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,"Segoe UI",sans-serif;
+    color:var(--color-ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:var(--sp-8);
+    padding:var(--sp-8) var(--sp-4) 48px;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    text-rendering:optimizeLegibility;
+    transition:background-color .25s ease;
+  }
+
+  /* =========================================================
+     2. ICON SYSTEM (defined once, referenced everywhere via
+     <use> - zero duplicated path data)
+     ========================================================= */
+  .icon-defs{ position:absolute; width:0; height:0; overflow:hidden; }
+
+  /* NOTE: <use> instantiates a shadow tree that CSS descendant
+     selectors (".icon path") cannot pierce. Every property below
+     is therefore one that SVG inherits through that boundary
+     (fill, stroke, stroke-width, vector-effect), set directly on
+     the .icon host so it flows down into the referenced symbol. */
+  .icon{
+    flex:none;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:6;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;
+    shape-rendering:geometricPrecision;
+  }
+  .icon--contact{ width:var(--icon-lg); height:var(--icon-lg); color:var(--color-ink); }
+  .icon--meta{ width:var(--icon-sm); height:var(--icon-sm); color:var(--color-muted); }
+
+  /* Typographic "@" mark - replaces a fragile hand-drawn glyph
+     with a character that is always crisp at any size. */
+  .contact__at{
+    font-size:15px;
+    font-weight:700;
+    line-height:1;
+    color:var(--color-ink);
+  }
+
+  /* =========================================================
+     3. PAGE SHELL
+     ========================================================= */
+  .cv-page{
+    width:var(--page-w);
+    min-height:var(--page-h);
+    background:var(--color-page-bg);
+    color:var(--color-ink);
+    box-shadow:
+      0 1px 2px rgba(20,21,26,.04),
+      0 6px 16px rgba(20,21,26,.06),
+      0 24px 48px rgba(20,21,26,.08);
+    padding:var(--page-pad-y) var(--page-pad-x);
+    display:grid;
+    grid-template-columns:1fr var(--sidebar-w);
+    column-gap:var(--col-gap);
+    align-content:start;
+    transition:background-color .25s ease, color .25s ease;
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
+
+  /* =========================================================
+     4. HEADER
+     ========================================================= */
+  .cv-page__header{ grid-column:1 / -1; margin-bottom:var(--col-gap); }
+
+  .cv-page__name{
+    margin:0 0 var(--sp-2) 0;
+    font-size:var(--fs-name);
+    font-weight:800;
+    letter-spacing:-.015em;
+    line-height:1.1;
+  }
+
+  .contact{ display:flex; align-items:center; gap:var(--sp-8); font-size:var(--fs-org); }
+  .contact__item{ display:flex; align-items:center; gap:var(--sp-3); }
+  .contact__link{ color:var(--color-ink); text-decoration:none; }
+
+  /* =========================================================
+     5. SECTION SHELL
+     ========================================================= */
+  .section{ margin-bottom:var(--section-gap); }
+  .col-left  > .section:last-child,
+  .col-right > .section:last-child{ margin-bottom:0; }
+
+  .section__title{
+    font-size:var(--fs-section);
+    font-weight:800;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--color-ink);
+    margin:0 0 var(--sp-6) 0;
+    padding-bottom:var(--sp-3);
+    border-bottom:2px solid var(--color-accent);
+    break-after:avoid;
+  }
+
+  .section__body{
+    font-size:var(--fs-body);
+    line-height:1.37;
+    margin:0;
+  }
+
+  /* =========================================================
+     6. ENTRY (Experience / Education)
+     ========================================================= */
+  .entry{ margin-bottom:var(--entry-gap); break-inside:avoid; }
+  .entry:last-child{ margin-bottom:0; }
+
+  .entry__title{ font-size:var(--fs-entry); font-weight:700; margin:0 0 var(--sp-1) 0; }
+  .entry__org{ color:var(--color-accent); font-weight:700; font-size:var(--fs-org); margin-bottom:var(--sp-1); }
+
+  .entry__meta{
+    display:flex;
+    align-items:center;
+    gap:var(--sp-7);
+    font-size:var(--fs-meta);
+    color:var(--color-muted);
+    margin-bottom:var(--sp-2);
+  }
+  .entry__meta-item{ display:flex; align-items:center; gap:var(--sp-2); white-space:nowrap; }
+
+  .entry__tagline{ font-size:var(--fs-base); margin:0 0 var(--sp-2) 0; }
+  .entry__course{ font-size:var(--fs-base); margin:0 0 var(--sp-2) 0; }
+  .entry__course-value{ font-style:italic; }
+
+  .entry__bullets{ margin:0; padding-left:16px; }
+  .entry__bullets li{ font-size:var(--fs-base); line-height:1.35; margin-bottom:var(--sp-2); }
+  .entry__bullets li:last-child{ margin-bottom:0; }
+  .entry__bullets li::marker{ color:var(--color-muted); }
+  .entry__bullets .thesis{ font-weight:700; font-style:italic; }
+
+  /* =========================================================
+     7. SIDEBAR - Languages
+     A single sleek gradient meter per language, replacing the
+     original's discrete block bars with a lighter, more modern
+     progress indicator that carries the same information.
+     ========================================================= */
+  .lang{ margin-bottom:var(--sp-6); break-inside:avoid; }
+  .lang:last-child{ margin-bottom:0; }
+  .lang__name{ font-size:var(--fs-org); font-weight:700; margin-bottom:var(--sp-3); }
+  .lang__meter{
+    height:7px;
+    border-radius:999px;
+    background:var(--color-track-tint);
+    overflow:hidden;
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
+  .lang__meter-fill{
+    height:100%;
+    width:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
+
+  /* =========================================================
+     8. SIDEBAR - Skills
+     Chips size to their own label instead of splitting the
+     sidebar into two fixed columns - short labels sit two or
+     three to a row, only the longest ones take a row alone, and
+     nothing is forced onto two lines the way a fixed-width cell
+     forced "In-depth Research Analysis" to wrap before.
+     ========================================================= */
+  .skills{ display:flex; flex-wrap:wrap; gap:var(--sp-2); }
+  .skills__item{
+    flex:0 0 auto;
+    font-size:var(--fs-tiny);
+    font-weight:600;
+    line-height:1.3;
+    white-space:nowrap;
+    padding:var(--sp-2) var(--sp-4);
+    border-radius:999px;
+    background:var(--color-chip-bg);
+    color:var(--color-ink);
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
+
+  /* =========================================================
+     9. SIDEBAR - Additional Experience
+     Title/org, then a dated-and-located meta row (the same icon
+     pairing used by Experience and Education), then a description
+     line - three short lines instead of one dense run-on line.
+     Same information, but organized the same way as every other
+     dated entry on the page instead of a bespoke inline format,
+     and it uses the vertical room the sidebar has to spare.
+     ========================================================= */
+  .addexp{ margin-bottom:var(--sp-5); break-inside:avoid; }
+  .addexp:last-child{ margin-bottom:0; }
+  .addexp__header{ font-size:var(--fs-org); margin:0 0 var(--sp-1) 0; }
+  .addexp__title{ font-weight:700; color:var(--color-ink); }
+  .addexp__org{ font-weight:700; color:var(--color-accent); }
+  /* Both items sit on one row, always - never wrapped, in either
+     language. That's only reliable because the row's font-size is
+     dialed down slightly from --fs-tiny specifically so the widest
+     realistic pairing (an "MM/YYYY - MM/YYYY" range plus the
+     longest "City, Country" among the two languages) still fits
+     the sidebar's width with room to spare - verified by measuring
+     actual rendered width, not assumed. */
+  .addexp__meta{ display:flex; align-items:center; flex-wrap:nowrap; gap:var(--sp-6); font-size:9.2px; color:var(--color-muted); margin-bottom:var(--sp-1); white-space:nowrap; }
+  .addexp__meta-item{ display:flex; align-items:center; gap:var(--sp-2); white-space:nowrap; flex:none; }
+  .addexp__desc{ font-size:var(--fs-meta); font-style:italic; color:var(--color-muted); margin:0; line-height:1.3; }
+
+  /* =========================================================
+     10. CONTROLS (screen-only - theme toggle + PDF export)
+     ========================================================= */
+  /* The language switch sits above the export button rather than
+     beside it, so the three controls trace a corner around the
+     viewport's bottom-right edge instead of a straight row. */
+  .controls{
+    position:fixed;
+    right:var(--sp-8);
+    bottom:var(--sp-8);
+    display:flex;
+    align-items:flex-end;
+    gap:var(--sp-4);
+    z-index:100;
+  }
+  .controls__stack{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:var(--sp-4);
+  }
+  .control-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:var(--sp-3);
+    height:48px;
+    padding:0 var(--sp-6);
+    border-radius:999px;
+    border:1px solid var(--color-btn-border);
+    background:var(--color-btn-bg);
+    color:var(--color-ink);
+    font-family:inherit;
+    font-size:var(--fs-small);
+    font-weight:700;
+    letter-spacing:.02em;
+    cursor:pointer;
+    box-shadow:0 6px 20px rgba(20,21,26,.12);
+    transition:transform .15s ease, box-shadow .15s ease, background-color .25s ease, border-color .25s ease;
+  }
+  .control-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(20,21,26,.18); }
+  .control-btn:active{ transform:translateY(0); }
+  .control-btn--icon{ width:48px; padding:0; }
+  .control-btn--primary{
+    background:var(--color-accent);
+    border-color:var(--color-accent);
+    color:#fff;
+  }
+  .control-btn .icon{ width:18px; height:18px; }
+  .control-btn--icon .icon-moon{ display:none; }
+  :root[data-theme="dark"] .control-btn--icon .icon-sun{ display:none; }
+  :root[data-theme="dark"] .control-btn--icon .icon-moon{ display:block; }
+
+  /* Language switch - a single vertical toggle, not a pair of
+     independent buttons. Both languages stay visible at all times
+     (nothing to decode - the highlighted one is always the current
+     one), but the whole control is one hit target: a click anywhere
+     on it flips the language, exactly like flicking a switch,
+     rather than requiring a click on the specific "other" label. */
+  .lang-switch{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    width:48px;
+    padding:4px;
+    gap:4px;
+    border-radius:24px;
+    border:1px solid var(--color-btn-border);
+    background:var(--color-btn-bg);
+    box-shadow:0 6px 20px rgba(20,21,26,.12);
+    appearance:none;
+    -webkit-appearance:none;
+    font-family:inherit;
+    cursor:pointer;
+    transition:box-shadow .15s ease, border-color .25s ease, background-color .25s ease;
+  }
+  .lang-switch:hover{ box-shadow:0 10px 26px rgba(20,21,26,.18); }
+
+  .lang-switch__thumb{
+    position:absolute;
+    top:4px;
+    left:4px;
+    width:40px;
+    height:36px;
+    border-radius:18px;
+    background:var(--color-accent);
+    /* A single eased transform - rather than animating two
+       background-colors independently - is what makes the motion
+       read as one continuous slide instead of a cross-fade. */
+    transition:transform .32s cubic-bezier(.65,0,.35,1);
+    will-change:transform;
+  }
+  .lang-switch[data-active="en"] .lang-switch__thumb{
+    transform:translateY(40px);
+  }
+
+  .lang-switch__option{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:36px;
+    font-size:var(--fs-small);
+    font-weight:700;
+    letter-spacing:.02em;
+    color:var(--color-muted);
+    pointer-events:none;
+    transition:color .32s cubic-bezier(.65,0,.35,1);
+  }
+  .lang-switch[data-active="it"] .lang-switch__option[data-lang="it"],
+  .lang-switch[data-active="en"] .lang-switch__option[data-lang="en"]{
+    color:#fff;
+  }
+
+  /* Only the page matching the active language is ever part of
+     the render - on screen, in print, and in an exported PDF -
+     so opening the file always shows exactly one A4 page. */
+  :root[data-lang="it"] .cv-page[lang="en"]{ display:none; }
+  :root[data-lang="en"] .cv-page[lang="it"]{ display:none; }
+
+  /* =========================================================
+     11. PRINT
+     ========================================================= */
+  @media print{
+    /* Without an explicit page size, print engines fall back to
+       whatever the OS/printer default is (Letter, on most US
+       systems) - shorter than this document's 297mm-tall page.
+       That mismatch is what produced the spurious blank second
+       page: the leftover sliver of an oversized page spilling onto
+       a page of its own. Declaring the size here removes the
+       ambiguity regardless of OS or printer defaults. */
+    @page{ size:A4; margin:0; }
+    body{ background:var(--color-shell-bg); padding:0; gap:0; }
+    .cv-page{ box-shadow:none; margin:0; }
+    /* A page break is placed BEFORE every page that follows another,
+       rather than AFTER every page but the last. The break-after
+       approach (page-1 { break-after: always }, override on
+       :last-of-type) is the more common pattern, but several print
+       engines - Safari and Chrome's native "Print to PDF" on macOS
+       included - can render it as an extra blank sheet between the
+       two pages. break-before on the following sibling has no
+       "after the last element" case to mis-fire, so there is
+       nothing left to produce a spurious page. */
+    .cv-page + .cv-page{
+      break-before:page;
+      page-break-before:always;
+    }
+    .controls{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Shared icon library - single source of truth for every glyph used below -->
+<svg class="icon-defs" aria-hidden="true">
+  <symbol id="icon-phone" viewBox="0 0 100 100">
+    <rect x="30" y="8" width="40" height="84" rx="13"/>
+    <path d="M42 21 L58 21"/>
+    <path d="M46 79 L54 79"/>
+  </symbol>
+  <symbol id="icon-calendar" viewBox="0 0 100 100">
+    <path d="M15 25 L85 25 L85 90 L15 90 Z"/>
+    <path d="M15 40 L85 40"/>
+    <path d="M30 15 L30 32"/>
+    <path d="M70 15 L70 32"/>
+  </symbol>
+  <symbol id="icon-location" viewBox="0 0 100 100">
+    <path d="M50 10 C30 10 15 25 15 44 C15 68 50 92 50 92 C50 92 85 68 85 44 C85 25 70 10 50 10 Z"/>
+    <circle cx="50" cy="43" r="13"/>
+  </symbol>
+  <symbol id="icon-sun" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="19"/>
+    <path d="M50 8 L50 20"/>
+    <path d="M50 80 L50 92"/>
+    <path d="M8 50 L20 50"/>
+    <path d="M80 50 L92 50"/>
+    <path d="M21 21 L29 29"/>
+    <path d="M71 71 L79 79"/>
+    <path d="M79 21 L71 29"/>
+    <path d="M29 71 L21 79"/>
+  </symbol>
+  <symbol id="icon-moon" viewBox="0 0 100 100">
+    <path d="M70 15 A34 34 0 1 0 85 68 A25 25 0 0 1 70 15 Z"/>
+  </symbol>
+  <symbol id="icon-export" viewBox="0 0 100 100">
+    <path d="M50 12 L50 62"/>
+    <path d="M28 42 L50 65 L72 42"/>
+    <path d="M18 82 L82 82"/>
+  </symbol>
+</svg>
+
+<main>
+
+<!-- ============ PAGE 1 - ITALIANO ============ -->
+<article class="cv-page" lang="it">
+
+  <header class="cv-page__header">
+    <h1 class="cv-page__name">ALBERTO DI ROSA</h1>
+    <div class="contact">
+      <div class="contact__item">
+        <svg class="icon icon--contact" aria-hidden="true"><use href="#icon-phone"/></svg>
+        <span>+39 345 3106180</span>
+      </div>
+      <div class="contact__item">
+        <span class="contact__at" aria-hidden="true">@</span>
+        <a class="contact__link" href="mailto:Alb.Di.Rosa@gmail.com">Alb.Di.Rosa@gmail.com</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="col-left">
+
+    <section class="section">
+      <h2 class="section__title">About me</h2>
+      <p class="section__body">Spinto da un profondo interesse per il mondo digitale e tecnologico, nutro una particolare passione per la trasformazione digitale etica e l'innovazione tecnologica. Laureato in Media &amp; Information (University of Amsterdam) e con un master in Media, Digitalisation &amp; Social Impact (Erasmus University Rotterdam), ho approfondito l'impatto sociale dei progressi digitali - tra cui sorveglianza digitale, governance basata sui dati e responsabilità algoritmica - acquisendo esperienza pratica nei metodi di ricerca digitale. In Hidoly mi occupo di marketing lungo tutto il funnel, dall'esecuzione delle campagne su LinkedIn, Google e Meta al nurturing basato su CRM e al reporting delle performance. Conosciuto per adattabilità, attenzione ai dettagli e genuino entusiasmo per l'apprendimento.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Experience</h2>
+
+      <div class="entry">
+        <h3 class="entry__title">Performance Marketing Specialist</h3>
+        <p class="entry__org">Hidoly</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>02/2026 - Presente</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Torino, Italia</span>
+          </div>
+        </div>
+        <ul class="entry__bullets">
+          <li>Pianifico e gestisco campagne a pagamento su LinkedIn, Google Ads e Meta a supporto della pipeline commerciale.</li>
+          <li>Costruisco e mantengo i workflow CRM su HubSpot, incluse sequenze di email nurturing e campagne cross-channel.</li>
+          <li>Monitoro KPI e metriche di performance con Looker Studio e Google Analytics; sviluppo agenti AI e reportistica HTML per le operazioni di marketing quotidiane.</li>
+        </ul>
+      </div>
+
+      <div class="entry">
+        <h3 class="entry__title">Digital Panel Support Agent</h3>
+        <p class="entry__org">Nielsen</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>01/2024 - 12/2024</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Milan, Italy</span>
+          </div>
+        </div>
+        <p class="entry__tagline">Leader globale nella misurazione delle audience e nell'analisi dei dati.</p>
+        <ul class="entry__bullets">
+          <li>Ho supportato i partecipanti di una ricerca digitale per Audicom, risolvendo problemi tecnici e gestendo le richieste di partecipazione e premi; i miei sforzi hanno portato a valutazioni di soddisfazione pari a quelle di colleghi con anni di esperienza.</li>
+          <li>Ho contribuito alla creazione di materiali grafici per nuove campagne e ho sviluppato in autonomia video guide diventate il contenuto ufficiale di supporto, aiutando centinaia di membri e diventando una risorsa fondamentale per il team.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Education</h2>
+
+      <div class="entry">
+        <h3 class="entry__title">Master's Degree</h3>
+        <p class="entry__org">Erasmus University of Rotterdam (EUR)</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>08/2022 - 06/2023</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Rotterdam, Netherlands</span>
+          </div>
+        </div>
+        <p class="entry__course"><strong>Programma:</strong> <span class="entry__course-value">Media, Digitalisation &amp; Social Impact</span></p>
+        <ul class="entry__bullets">
+          <li>Tesi: <span class="thesis">"Nudging Towards Smart Cities: A Social Media Perspective on Governance-Aided Nudges"</span>, incentrata su governance basata sui dati, trasformazione digitale e privacy.</li>
+        </ul>
+      </div>
+
+      <div class="entry">
+        <h3 class="entry__title">Bachelor's Degree</h3>
+        <p class="entry__org">University of Amsterdam (UvA)</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>09/2018 - 12/2021</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Amsterdam, Netherlands</span>
+          </div>
+        </div>
+        <p class="entry__course"><strong>Programma:</strong> <span class="entry__course-value">Media and Information</span></p>
+        <ul class="entry__bullets">
+          <li>Tesi: <span class="thesis">"Expression &amp; Deployment of 'Authenticity' within Social Media Platforms"</span>, sul ruolo dei social media nella presentazione autentica di sé.</li>
+        </ul>
+      </div>
+
+    </section>
+  </div>
+
+  <div class="col-right">
+
+    <section class="section">
+      <h2 class="section__title">Languages</h2>
+      <div class="lang">
+        <p class="lang__name">Italian</p>
+        <div class="lang__meter"><div class="lang__meter-fill"></div></div>
+      </div>
+      <div class="lang">
+        <p class="lang__name">English</p>
+        <div class="lang__meter"><div class="lang__meter-fill"></div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Skills</h2>
+      <div class="skills">
+        <p class="skills__item">HubSpot</p>
+        <p class="skills__item">Google Ads</p>
+        <p class="skills__item">Google Analytics</p>
+        <p class="skills__item">Google Looker Studio</p>
+        <p class="skills__item">Meta Business Suite</p>
+        <p class="skills__item">LinkedIn Campaign Manager</p>
+        <p class="skills__item">Case Study Research</p>
+        <p class="skills__item">In-depth Research Analysis</p>
+        <p class="skills__item">Qualtrics Surveys</p>
+        <p class="skills__item">ATLAS.ti</p>
+        <p class="skills__item">Canva</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Additional Experience</h2>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Host and Entertainer</span> - <span class="addexp__org">Xtracold Icebar</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>04/2018 - 08/2019</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Amsterdam, Paesi Bassi</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Ho lavorato come host e intrattenitore in un bar unico realizzato in vero ghiaccio a -10°C.</p>
+      </div>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Volontariato</span> - <span class="addexp__org">The Green Lion</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>07/2015</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Bali, Indonesia</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Ho svolto attività di volontariato per un progetto sulla conservazione delle tartarughe marine verdi.</p>
+      </div>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Press Staff</span> - <span class="addexp__org">The Model United Nations</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>03/2015</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Torino, Italia</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Ho gestito la fotografia degli eventi e i contenuti per la pagina ufficiale Facebook del MUN.</p>
+      </div>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Stage</span> - <span class="addexp__org">Groupon Italia</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>03/2015</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Milano, Italia</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Ho condotto attività di sensibilizzazione verso potenziali partner, contribuendo a una nuova collaborazione.</p>
+      </div>
+
+    </section>
+  </div>
+</article>
+
+
+<!-- ============ PAGE 2 - ENGLISH ============ -->
+<article class="cv-page" lang="en">
+
+  <header class="cv-page__header">
+    <h1 class="cv-page__name">ALBERTO DI ROSA</h1>
+    <div class="contact">
+      <div class="contact__item">
+        <svg class="icon icon--contact" aria-hidden="true"><use href="#icon-phone"/></svg>
+        <span>+39 345 3106180</span>
+      </div>
+      <div class="contact__item">
+        <span class="contact__at" aria-hidden="true">@</span>
+        <a class="contact__link" href="mailto:Alb.Di.Rosa@gmail.com">Alb.Di.Rosa@gmail.com</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="col-left">
+
+    <section class="section">
+      <h2 class="section__title">About me</h2>
+      <p class="section__body">Driven by a deep interest in the digital and technological world, I'm especially passionate about ethical digital transformation and technological innovation. With a Bachelor's in Media &amp; Information (University of Amsterdam) and a Master's in Media, Digitalisation &amp; Social Impact (Erasmus University Rotterdam), I've studied the social impact of digital advancements - including digital surveillance, data-driven governance, and algorithmic accountability - and gained hands-on experience with digital research methods. At Hidoly, I manage marketing across the full funnel, from paid campaign execution on LinkedIn, Google, and Meta to CRM-driven nurturing and performance reporting. Known for adaptability, attention to detail, and a genuine enthusiasm for learning.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Experience</h2>
+
+      <div class="entry">
+        <h3 class="entry__title">Performance Marketing Specialist</h3>
+        <p class="entry__org">Hidoly</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>02/2026 - Present</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Turin, Italy</span>
+          </div>
+        </div>
+        <ul class="entry__bullets">
+          <li>Plan and manage paid campaigns across LinkedIn, Google Ads, and Meta, alongside outreach initiatives to support pipeline growth.</li>
+          <li>Build and maintain CRM workflows in HubSpot, including email nurturing sequences and cross-channel campaigns.</li>
+          <li>Track KPIs and performance metrics using Looker Studio and Google Analytics; build AI agents and custom HTML reporting to support day-to-day marketing operations.</li>
+        </ul>
+      </div>
+
+      <div class="entry">
+        <h3 class="entry__title">Digital Panel Support Agent</h3>
+        <p class="entry__org">Nielsen</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>01/2024 - 12/2024</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Milan, Italy</span>
+          </div>
+        </div>
+        <p class="entry__tagline">Global leader in audience measurement and data analytics.</p>
+        <ul class="entry__bullets">
+          <li>Supported participants in a digital research study for Audicom, resolving technical issues and handling participation and reward requests; my efforts led to satisfaction ratings matching colleagues with years-long tenure.</li>
+          <li>Contributed to the creation of graphical material for new campaigns and independently developed video guides that became the official support content, assisting hundreds of members and becoming a core resource for the team.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Education</h2>
+
+      <div class="entry">
+        <h3 class="entry__title">Master's Degree</h3>
+        <p class="entry__org">Erasmus University of Rotterdam (EUR)</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>08/2022 - 06/2023</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Rotterdam, Netherlands</span>
+          </div>
+        </div>
+        <p class="entry__course"><strong>Course:</strong> <span class="entry__course-value">Media, Digitalisation &amp; Social Impact</span></p>
+        <ul class="entry__bullets">
+          <li>Thesis: <span class="thesis">"Nudging Towards Smart Cities: A Social Media Perspective on Governance-Aided Nudges"</span>, focused on data-driven governance, digital transformation, and privacy.</li>
+        </ul>
+      </div>
+
+      <div class="entry">
+        <h3 class="entry__title">Bachelor's Degree</h3>
+        <p class="entry__org">University of Amsterdam (UvA)</p>
+        <div class="entry__meta">
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>09/2018 - 12/2021</span>
+          </div>
+          <div class="entry__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Amsterdam, Netherlands</span>
+          </div>
+        </div>
+        <p class="entry__course"><strong>Course:</strong> <span class="entry__course-value">Media and Information</span></p>
+        <ul class="entry__bullets">
+          <li>Thesis: <span class="thesis">"Expression &amp; Deployment of 'Authenticity' within Social Media Platforms"</span>, on social media's role in shaping authentic self-presentation.</li>
+        </ul>
+      </div>
+
+    </section>
+  </div>
+
+  <div class="col-right">
+
+    <section class="section">
+      <h2 class="section__title">Languages</h2>
+      <div class="lang">
+        <p class="lang__name">Italian</p>
+        <div class="lang__meter"><div class="lang__meter-fill"></div></div>
+      </div>
+      <div class="lang">
+        <p class="lang__name">English</p>
+        <div class="lang__meter"><div class="lang__meter-fill"></div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Skills</h2>
+      <div class="skills">
+        <p class="skills__item">HubSpot</p>
+        <p class="skills__item">Google Ads</p>
+        <p class="skills__item">Google Analytics</p>
+        <p class="skills__item">Google Looker Studio</p>
+        <p class="skills__item">Meta Business Suite</p>
+        <p class="skills__item">LinkedIn Campaign Manager</p>
+        <p class="skills__item">Case Study Research</p>
+        <p class="skills__item">In-depth Research Analysis</p>
+        <p class="skills__item">Qualtrics Surveys</p>
+        <p class="skills__item">ATLAS.ti</p>
+        <p class="skills__item">Canva</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Additional Experience</h2>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Host and Entertainer</span> - <span class="addexp__org">Xtracold Icebar</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>04/2018 - 08/2019</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Amsterdam, Netherlands</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Served as host and entertainer in a unique bar made of real ice at -10°C.</p>
+      </div>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Volunteering</span> - <span class="addexp__org">The Green Lion</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>07/2015</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Bali, Indonesia</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Carried out volunteer work for a project focused on the conservation of green sea turtles.</p>
+      </div>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Press Staff</span> - <span class="addexp__org">The Model United Nations</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>03/2015</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Turin, Italy</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Managed event photography and content for MUN's official Facebook page.</p>
+      </div>
+
+      <div class="addexp">
+        <p class="addexp__header"><span class="addexp__title">Internship</span> - <span class="addexp__org">Groupon Italia</span></p>
+        <div class="addexp__meta">
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <span>03/2015</span>
+          </div>
+          <div class="addexp__meta-item">
+            <svg class="icon icon--meta" aria-hidden="true"><use href="#icon-location"/></svg>
+            <span>Milan, Italy</span>
+          </div>
+        </div>
+        <p class="addexp__desc">Conducted outreach to potential partners, contributing to a new business partnership.</p>
+      </div>
+
+    </section>
+  </div>
+</article>
+
+</main>
+
+<!-- Screen-only controls - hidden in print via @media print above -->
+<div class="controls">
+  <button type="button" class="control-btn control-btn--icon" id="theme-toggle" aria-label="Toggle dark mode">
+    <svg class="icon icon-sun" aria-hidden="true"><use href="#icon-sun"/></svg>
+    <svg class="icon icon-moon" aria-hidden="true"><use href="#icon-moon"/></svg>
+  </button>
+  <div class="controls__stack">
+    <button type="button" class="lang-switch" id="lang-toggle">
+      <span class="lang-switch__thumb" aria-hidden="true"></span>
+      <span class="lang-switch__option" data-lang="it" aria-hidden="true">IT</span>
+      <span class="lang-switch__option" data-lang="en" aria-hidden="true">EN</span>
+    </button>
+    <button type="button" class="control-btn control-btn--primary" id="export-pdf">
+      <svg class="icon" aria-hidden="true"><use href="#icon-export"/></svg>
+      Export PDF
+    </button>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var root = document.documentElement;
+    var themeBtn = document.getElementById('theme-toggle');
+    var langBtn = document.getElementById('lang-toggle');
+    var exportBtn = document.getElementById('export-pdf');
+
+    themeBtn.addEventListener('click', function(){
+      var isDark = root.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        root.removeAttribute('data-theme');
+      }else{
+        root.setAttribute('data-theme','dark');
+      }
+      try{ localStorage.setItem('adr-cv-theme', isDark ? 'light' : 'dark'); }
+      catch(e){ /* best-effort only - theme still applies for this session */ }
+    });
+
+    function syncLangSwitch(){
+      var active = root.getAttribute('data-lang');
+      var label = active === 'it' ? 'Italian' : 'English';
+      langBtn.setAttribute('data-active', active);
+      // role="switch" would misrepresent this as a two-state
+      // on/off control; it toggles between two named languages,
+      // so a plain button with a state-describing label is the
+      // more accurate a11y contract.
+      langBtn.setAttribute('aria-label', 'Switch language (currently ' + label + ')');
+    }
+
+    function setLang(next){
+      root.setAttribute('data-lang', next);
+      root.lang = next; // keeps the document's declared language in
+                         // sync with the content actually on screen,
+                         // for screen readers and translation tools
+      syncLangSwitch();
+      try{ localStorage.setItem('adr-cv-lang', next); }
+      catch(e){ /* best-effort only - language still applies for this session */ }
+    }
+
+    // The whole control is one hit target: clicking anywhere on it
+    // flips to the other language, rather than requiring a click on
+    // a specific label.
+    langBtn.addEventListener('click', function(){
+      setLang(root.getAttribute('data-lang') === 'it' ? 'en' : 'it');
+    });
+    syncLangSwitch(); // reflect whatever the anti-flash head script already set
+
+    exportBtn.addEventListener('click', function(){
+      window.print();
+    });
+  })();
+</script>
+
+</body>
+</html>
