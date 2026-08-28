@@ -15,9 +15,11 @@
   (function(){
     var root = document.documentElement;
     try{
+      // Dark is the default look for the live page; a visitor who
+      // explicitly picks light gets that choice remembered instead.
       var savedTheme = localStorage.getItem('adr-cv-theme');
-      if(savedTheme === 'dark'){ root.setAttribute('data-theme','dark'); }
-    }catch(e){ /* localStorage unavailable - default light theme stands */ }
+      if(savedTheme !== 'light'){ root.setAttribute('data-theme','dark'); }
+    }catch(e){ root.setAttribute('data-theme','dark'); }
     try{
       var savedLang = localStorage.getItem('adr-cv-lang') === 'en' ? 'en' : 'it';
       root.setAttribute('data-lang', savedLang);
