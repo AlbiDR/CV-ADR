@@ -374,7 +374,28 @@
   .addexp__desc{ font-size:var(--fs-meta); font-style:italic; color:var(--color-muted); margin:0; line-height:1.3; }
 
   /* =========================================================
-     10. CONTROLS (screen-only - theme toggle + PDF export)
+     10. SIDEBAR - Portfolio QR
+     The sidebar column is consistently shorter than the main one,
+     leaving real unused space at the bottom of the page - this
+     fills it rather than leaving it empty. Colors are hardcoded
+     (not theme tokens): a QR code must stay black-on-white in both
+     themes to keep scanning contrast reliable.
+     ========================================================= */
+  .qr{ display:flex; flex-direction:column; align-items:center; gap:var(--sp-4); }
+  .qr__code{
+    width:100px;
+    height:100px;
+    border-radius:6px;
+    overflow:hidden;
+    box-shadow:inset 0 0 0 1px var(--color-divider);
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
+  .qr__code svg{ display:block; width:100%; height:100%; }
+  .qr__label{ font-size:var(--fs-tiny); color:var(--color-muted); text-align:center; }
+
+  /* =========================================================
+     11. CONTROLS (screen-only - theme toggle + PDF export)
      ========================================================= */
   /* Theme toggle and language switch sit side by side on top, the
      export button spans full-width below - three controls tracing a
@@ -416,24 +437,22 @@
   }
   .control-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(20,21,26,.18); }
   .control-btn:active{ transform:translateY(0); }
-  .control-btn--icon{ width:48px; padding:0; }
   .control-btn--primary{
     background:var(--color-accent);
     border-color:var(--color-accent);
     color:#fff;
   }
   .control-btn .icon{ width:18px; height:18px; }
-  .control-btn--icon .icon-moon{ display:none; }
-  :root[data-theme="dark"] .control-btn--icon .icon-sun{ display:none; }
-  :root[data-theme="dark"] .control-btn--icon .icon-moon{ display:block; }
 
-  /* Language switch - a single vertical toggle, not a pair of
-     independent buttons. Both languages stay visible at all times
-     (nothing to decode - the highlighted one is always the current
-     one), but the whole control is one hit target: a click anywhere
-     on it flips the language, exactly like flicking a switch,
-     rather than requiring a click on the specific "other" label. */
-  .lang-switch{
+  /* A single, shared vertical-toggle shape for BOTH the theme switch
+     and the language switch - one form language for two controls
+     that do the same kind of job (flip between two named states).
+     Each option stays visible at all times (nothing to decode - the
+     highlighted one is always the current one), and the whole
+     control is one hit target: a click anywhere on it flips state,
+     exactly like flicking a switch, rather than requiring a click on
+     the specific "other" option. */
+  .switch{
     position:relative;
     display:flex;
     flex-direction:column;
@@ -450,9 +469,9 @@
     cursor:pointer;
     transition:box-shadow .15s ease, border-color .25s ease, background-color .25s ease;
   }
-  .lang-switch:hover{ box-shadow:0 10px 26px rgba(20,21,26,.18); }
+  .switch:hover{ box-shadow:0 10px 26px rgba(20,21,26,.18); }
 
-  .lang-switch__thumb{
+  .switch__thumb{
     position:absolute;
     top:4px;
     left:4px;
@@ -466,11 +485,12 @@
     transition:transform .32s cubic-bezier(.65,0,.35,1);
     will-change:transform;
   }
-  .lang-switch[data-active="en"] .lang-switch__thumb{
+  .switch[data-active="en"] .switch__thumb,
+  .switch[data-active="dark"] .switch__thumb{
     transform:translateY(40px);
   }
 
-  .lang-switch__option{
+  .switch__option{
     position:relative;
     z-index:1;
     display:flex;
@@ -484,8 +504,11 @@
     pointer-events:none;
     transition:color .32s cubic-bezier(.65,0,.35,1);
   }
-  .lang-switch[data-active="it"] .lang-switch__option[data-lang="it"],
-  .lang-switch[data-active="en"] .lang-switch__option[data-lang="en"]{
+  .switch__option .icon{ width:16px; height:16px; }
+  .switch[data-active="it"] .switch__option[data-lang="it"],
+  .switch[data-active="en"] .switch__option[data-lang="en"],
+  .switch[data-active="light"] .switch__option[data-theme-opt="light"],
+  .switch[data-active="dark"] .switch__option[data-theme-opt="dark"]{
     color:#fff;
   }
 
@@ -496,7 +519,7 @@
   :root[data-lang="en"] .cv-page[lang="it"]{ display:none; }
 
   /* =========================================================
-     11. PRINT
+     12. PRINT
      ========================================================= */
   @media print{
     /* Without an explicit page size, print engines fall back to
@@ -775,6 +798,19 @@
       </div>
 
     </section>
+
+    <section class="section">
+      <h2 class="section__title">Portfolio</h2>
+      <div class="qr">
+        <div class="qr__code">
+          <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Codice QR che rimanda al CV live su albidr.github.io/CV-ADR">
+            <rect width="33" height="33" fill="#ffffff"/>
+            <path fill="#000000" d="M2 2h7v1h-7zM11 2h1v1h-1zM15 2h1v1h-1zM18 2h4v1h-4zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM15 3h3v1h-3zM19 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h1v1h-1zM13 4h3v1h-3zM18 4h2v1h-2zM21 4h2v1h-2zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM14 5h4v1h-4zM20 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM12 6h1v1h-1zM15 6h2v1h-2zM18 6h3v1h-3zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h5v1h-5zM19 7h4v1h-4zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM11 9h4v1h-4zM16 9h1v1h-1zM19 9h3v1h-3zM2 10h1v1h-1zM5 10h1v1h-1zM7 10h2v1h-2zM10 10h1v1h-1zM14 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM23 10h1v1h-1zM25 10h1v1h-1zM4 11h4v1h-4zM9 11h3v1h-3zM13 11h1v1h-1zM16 11h2v1h-2zM22 11h3v1h-3zM27 11h1v1h-1zM30 11h1v1h-1zM3 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM14 12h1v1h-1zM18 12h2v1h-2zM21 12h1v1h-1zM23 12h1v1h-1zM25 12h5v1h-5zM4 13h1v1h-1zM13 13h1v1h-1zM16 13h2v1h-2zM20 13h2v1h-2zM23 13h1v1h-1zM26 13h1v1h-1zM28 13h2v1h-2zM8 14h2v1h-2zM11 14h4v1h-4zM18 14h1v1h-1zM23 14h2v1h-2zM27 14h1v1h-1zM29 14h2v1h-2zM4 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM17 15h1v1h-1zM19 15h1v1h-1zM21 15h2v1h-2zM2 16h1v1h-1zM4 16h3v1h-3zM8 16h1v1h-1zM11 16h1v1h-1zM13 16h2v1h-2zM17 16h2v1h-2zM20 16h1v1h-1zM24 16h2v1h-2zM27 16h4v1h-4zM2 17h1v1h-1zM6 17h1v1h-1zM11 17h2v1h-2zM14 17h3v1h-3zM18 17h4v1h-4zM23 17h3v1h-3zM27 17h1v1h-1zM29 17h1v1h-1zM3 18h3v1h-3zM8 18h3v1h-3zM12 18h2v1h-2zM15 18h3v1h-3zM22 18h1v1h-1zM29 18h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM10 19h5v1h-5zM17 19h1v1h-1zM20 19h1v1h-1zM23 19h3v1h-3zM27 19h1v1h-1zM30 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM8 20h1v1h-1zM10 20h2v1h-2zM14 20h2v1h-2zM19 20h1v1h-1zM22 20h2v1h-2zM26 20h1v1h-1zM29 20h2v1h-2zM7 21h1v1h-1zM9 21h5v1h-5zM15 21h1v1h-1zM19 21h1v1h-1zM22 21h2v1h-2zM26 21h1v1h-1zM29 21h2v1h-2zM2 22h1v1h-1zM4 22h1v1h-1zM8 22h1v1h-1zM11 22h1v1h-1zM13 22h2v1h-2zM16 22h3v1h-3zM20 22h1v1h-1zM22 22h5v1h-5zM28 22h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM22 23h1v1h-1zM26 23h1v1h-1zM28 23h3v1h-3zM2 24h7v1h-7zM11 24h1v1h-1zM14 24h3v1h-3zM22 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h2v1h-2zM14 25h2v1h-2zM20 25h1v1h-1zM22 25h1v1h-1zM26 25h4v1h-4zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM12 26h2v1h-2zM16 26h1v1h-1zM22 26h5v1h-5zM30 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM21 27h1v1h-1zM24 27h6v1h-6zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM11 28h4v1h-4zM16 28h1v1h-1zM18 28h3v1h-3zM22 28h1v1h-1zM26 28h3v1h-3zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM14 29h1v1h-1zM17 29h6v1h-6zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h3v1h-3zM14 30h1v1h-1zM16 30h1v1h-1zM22 30h3v1h-3zM26 30h2v1h-2zM29 30h1v1h-1z"/>
+          </svg>
+        </div>
+        <p class="qr__label">Scansiona per la versione live</p>
+      </div>
+    </section>
   </div>
 </article>
 
@@ -986,6 +1022,19 @@
       </div>
 
     </section>
+
+    <section class="section">
+      <h2 class="section__title">Portfolio</h2>
+      <div class="qr">
+        <div class="qr__code">
+          <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="QR code linking to the live CV at albidr.github.io/CV-ADR">
+            <rect width="33" height="33" fill="#ffffff"/>
+            <path fill="#000000" d="M2 2h7v1h-7zM11 2h1v1h-1zM15 2h1v1h-1zM18 2h4v1h-4zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM15 3h3v1h-3zM19 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h1v1h-1zM13 4h3v1h-3zM18 4h2v1h-2zM21 4h2v1h-2zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM14 5h4v1h-4zM20 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM12 6h1v1h-1zM15 6h2v1h-2zM18 6h3v1h-3zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h5v1h-5zM19 7h4v1h-4zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM11 9h4v1h-4zM16 9h1v1h-1zM19 9h3v1h-3zM2 10h1v1h-1zM5 10h1v1h-1zM7 10h2v1h-2zM10 10h1v1h-1zM14 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM23 10h1v1h-1zM25 10h1v1h-1zM4 11h4v1h-4zM9 11h3v1h-3zM13 11h1v1h-1zM16 11h2v1h-2zM22 11h3v1h-3zM27 11h1v1h-1zM30 11h1v1h-1zM3 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM14 12h1v1h-1zM18 12h2v1h-2zM21 12h1v1h-1zM23 12h1v1h-1zM25 12h5v1h-5zM4 13h1v1h-1zM13 13h1v1h-1zM16 13h2v1h-2zM20 13h2v1h-2zM23 13h1v1h-1zM26 13h1v1h-1zM28 13h2v1h-2zM8 14h2v1h-2zM11 14h4v1h-4zM18 14h1v1h-1zM23 14h2v1h-2zM27 14h1v1h-1zM29 14h2v1h-2zM4 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM17 15h1v1h-1zM19 15h1v1h-1zM21 15h2v1h-2zM2 16h1v1h-1zM4 16h3v1h-3zM8 16h1v1h-1zM11 16h1v1h-1zM13 16h2v1h-2zM17 16h2v1h-2zM20 16h1v1h-1zM24 16h2v1h-2zM27 16h4v1h-4zM2 17h1v1h-1zM6 17h1v1h-1zM11 17h2v1h-2zM14 17h3v1h-3zM18 17h4v1h-4zM23 17h3v1h-3zM27 17h1v1h-1zM29 17h1v1h-1zM3 18h3v1h-3zM8 18h3v1h-3zM12 18h2v1h-2zM15 18h3v1h-3zM22 18h1v1h-1zM29 18h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM10 19h5v1h-5zM17 19h1v1h-1zM20 19h1v1h-1zM23 19h3v1h-3zM27 19h1v1h-1zM30 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM8 20h1v1h-1zM10 20h2v1h-2zM14 20h2v1h-2zM19 20h1v1h-1zM22 20h2v1h-2zM26 20h1v1h-1zM29 20h2v1h-2zM7 21h1v1h-1zM9 21h5v1h-5zM15 21h1v1h-1zM19 21h1v1h-1zM22 21h2v1h-2zM26 21h1v1h-1zM29 21h2v1h-2zM2 22h1v1h-1zM4 22h1v1h-1zM8 22h1v1h-1zM11 22h1v1h-1zM13 22h2v1h-2zM16 22h3v1h-3zM20 22h1v1h-1zM22 22h5v1h-5zM28 22h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM22 23h1v1h-1zM26 23h1v1h-1zM28 23h3v1h-3zM2 24h7v1h-7zM11 24h1v1h-1zM14 24h3v1h-3zM22 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h2v1h-2zM14 25h2v1h-2zM20 25h1v1h-1zM22 25h1v1h-1zM26 25h4v1h-4zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM12 26h2v1h-2zM16 26h1v1h-1zM22 26h5v1h-5zM30 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM21 27h1v1h-1zM24 27h6v1h-6zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM11 28h4v1h-4zM16 28h1v1h-1zM18 28h3v1h-3zM22 28h1v1h-1zM26 28h3v1h-3zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM14 29h1v1h-1zM17 29h6v1h-6zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h3v1h-3zM14 30h1v1h-1zM16 30h1v1h-1zM22 30h3v1h-3zM26 30h2v1h-2zM29 30h1v1h-1z"/>
+          </svg>
+        </div>
+        <p class="qr__label">Scan for the live version</p>
+      </div>
+    </section>
   </div>
 </article>
 
@@ -994,14 +1043,15 @@
 <!-- Screen-only controls - hidden in print via @media print above -->
 <div class="controls">
   <div class="controls__row">
-    <button type="button" class="control-btn control-btn--icon" id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
-      <svg class="icon icon-sun" aria-hidden="true"><use href="#icon-sun"/></svg>
-      <svg class="icon icon-moon" aria-hidden="true"><use href="#icon-moon"/></svg>
+    <button type="button" class="switch" id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
+      <span class="switch__thumb" aria-hidden="true"></span>
+      <span class="switch__option" data-theme-opt="light" aria-hidden="true"><svg class="icon" aria-hidden="true"><use href="#icon-sun"/></svg></span>
+      <span class="switch__option" data-theme-opt="dark" aria-hidden="true"><svg class="icon" aria-hidden="true"><use href="#icon-moon"/></svg></span>
     </button>
-    <button type="button" class="lang-switch" id="lang-toggle">
-      <span class="lang-switch__thumb" aria-hidden="true"></span>
-      <span class="lang-switch__option" data-lang="it" aria-hidden="true">IT</span>
-      <span class="lang-switch__option" data-lang="en" aria-hidden="true">EN</span>
+    <button type="button" class="switch" id="lang-toggle">
+      <span class="switch__thumb" aria-hidden="true"></span>
+      <span class="switch__option" data-lang="it" aria-hidden="true">IT</span>
+      <span class="switch__option" data-lang="en" aria-hidden="true">EN</span>
     </button>
   </div>
   <button type="button" class="control-btn control-btn--primary" id="export-pdf">
@@ -1018,7 +1068,9 @@
     var exportBtn = document.getElementById('export-pdf');
 
     function syncThemeBtn(){
-      themeBtn.setAttribute('aria-pressed', root.getAttribute('data-theme') === 'dark' ? 'true' : 'false');
+      var isDark = root.getAttribute('data-theme') === 'dark';
+      themeBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+      themeBtn.setAttribute('data-active', isDark ? 'dark' : 'light');
     }
 
     themeBtn.addEventListener('click', function(){
