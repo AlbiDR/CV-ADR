@@ -211,6 +211,10 @@
      total stays unchanged. */
   .cv-page__header{
     grid-column:1 / -1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:var(--col-gap);
     padding-bottom:2mm;
     margin-bottom:calc(var(--col-gap) - 2mm);
     box-shadow:0 1px 0 0 var(--color-divider);
@@ -246,7 +250,11 @@
      participates in layout height. .col-left and .col-right both
      stretch to the row's height already (grid's default
      align-items:stretch), so anchoring the line to .col-left's own
-     0%-100% box always spans the taller of the two columns. */
+     0%-100% box always spans the taller of the two columns.
+     (Tried making both columns flex-fill so their last lines always
+     land flush with each other - reverted: the slack was large
+     enough that it read as one big awkward gap instead of a subtle
+     adjustment. Back to plain top-packed flow.) */
   .col-left{ position:relative; }
   .col-left::after{
     content:'';
@@ -298,6 +306,14 @@
   .entry__tagline,
   .entry__course{ font-size:var(--fs-base); margin:0 0 var(--sp-2) 0; }
   .entry__course-value{ font-style:italic; }
+
+  /* Institution/course names link out to the school's own site - the
+     link inherits the surrounding text's styling (accent color, or
+     italic) rather than looking like a generic blue hyperlink. */
+  .entry__org a,
+  .entry__course-value a{ color:inherit; text-decoration:none; }
+  .entry__org a:hover,
+  .entry__course-value a:hover{ text-decoration:underline; }
 
   .entry__bullets{ margin:0; padding-left:16px; }
   .entry__bullets li{ font-size:var(--fs-base); line-height:1.35; margin-bottom:var(--sp-2); }
@@ -372,6 +388,8 @@
   .addexp__header{ font-size:var(--fs-org); margin:0 0 var(--sp-1) 0; }
   .addexp__title{ font-weight:700; color:var(--color-ink); }
   .addexp__org{ font-weight:700; color:var(--color-accent); }
+  .addexp__org a{ color:inherit; text-decoration:none; }
+  .addexp__org a:hover{ text-decoration:underline; }
   /* Both items sit on one row, always - never wrapped, in either
      language. That's only reliable because the row's font-size is
      dialed down slightly from --fs-tiny specifically so the widest
@@ -384,24 +402,28 @@
   .addexp__desc{ font-size:var(--fs-meta); font-style:italic; color:var(--color-muted); margin:0; line-height:1.3; }
 
   /* =========================================================
-     10. SIDEBAR - Portfolio QR
-     The sidebar column is consistently shorter than the main one,
-     leaving real unused space at the bottom of the page - this
-     fills it rather than leaving it empty. col-right becomes a
-     flex column so the QR's wrapper can claim exactly that leftover
-     space (flex:1) and center the code within it, instead of the
-     code just trailing after the last section like ordinary content.
-     The code has no fill of its own (transparent - the page
-     background shows through); its modules are drawn in --color-ink,
-     the same token every other glyph on the page uses, so contrast
-     against the page flips correctly with the theme exactly like
-     text does. */
-  .col-right{ display:flex; flex-direction:column; }
-  .qr-wrap{ flex:1; display:flex; align-items:center; justify-content:center; }
-  .qr{ display:flex; flex-direction:column; align-items:center; gap:var(--sp-4); }
-  .qr__code{ width:100px; height:100px; }
+     10. HEADER QR
+     Lives in the header, next to the name/contact block, instead of
+     floating alone at the bottom of the sidebar with nothing to
+     visually anchor it to. The whole thing is a single link to the
+     live page - scanning the code and clicking the caption do the
+     same thing. The code has no fill of its own (transparent - the
+     page background shows through); its modules are drawn in
+     --color-ink, the same token every other glyph on the page uses,
+     so contrast against the page flips correctly with the theme
+     exactly like text does. */
+  .qr{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:var(--sp-2);
+    flex:none;
+    color:inherit;
+    text-decoration:none;
+  }
+  .qr__code{ width:44px; height:44px; }
   .qr__code svg{ display:block; width:100%; height:100%; }
-  .qr__label{ width:100px; font-size:var(--fs-tiny); color:var(--color-muted); text-align:center; }
+  .qr__label{ font-size:var(--fs-tiny); color:var(--color-muted); text-align:center; line-height:1.25; }
 
   /* =========================================================
      11. CONTROLS (screen-only - theme toggle + PDF export)
@@ -528,7 +550,40 @@
   :root[data-lang="en"] .cv-page[lang="it"]{ display:none; }
 
   /* =========================================================
-     12. PRINT
+     12. MOBILE (screen-only)
+     The floating controls are sized for a desktop pointer (48px hit
+     targets) - on a narrow phone they look oversized next to a page
+     that's just been scaled down by section 14's script. Shrinking
+     them here is a real breakpoint, independent of that JS scale
+     factor, so they stay a sensible, tappable size instead of
+     shrinking in lockstep with the page (which would make them too
+     small to tap on a very narrow screen). Centering the body's
+     content vertically (rather than top-packed with a fixed 48px
+     bottom padding) also closes up the dead strip of shell-color
+     space a shrunk page otherwise leaves at the bottom of a tall
+     phone viewport - the "extra blank page" the layout would
+     otherwise seem to have. */
+  @media (max-width:700px){
+    /* justify-content:center only has slack to distribute if body
+       is actually as tall as the viewport - by default it just
+       auto-sizes to its content, so without min-height this was a
+       no-op and the shrunk page stayed pinned to the top. */
+    body{ min-height:100vh; min-height:100dvh; justify-content:center; padding-bottom:var(--sp-8); }
+    .controls{ right:var(--sp-4); bottom:var(--sp-4); gap:var(--sp-3); }
+    .controls__row{ gap:var(--sp-3); }
+    .control-btn{ height:40px; padding:0 var(--sp-5); font-size:9.6px; }
+    .control-btn--icon{ width:40px; }
+    .control-btn .icon{ width:15px; height:15px; }
+    .switch{ width:40px; padding:3px; gap:3px; }
+    .switch__thumb{ width:34px; height:28px; top:3px; left:3px; }
+    .switch[data-active="en"] .switch__thumb,
+    .switch[data-active="dark"] .switch__thumb{ transform:translateY(31px); }
+    .switch__option{ height:28px; font-size:9.6px; }
+    .switch__option .icon{ width:14px; height:14px; }
+  }
+
+  /* =========================================================
+     13. PRINT
      ========================================================= */
   @media print{
     /* Without an explicit page size, print engines fall back to
@@ -540,7 +595,7 @@
        ambiguity regardless of OS or printer defaults. */
     @page{ size:A4; margin:0; }
     body{ background:var(--color-shell-bg); padding:0; gap:0; }
-    /* The mobile fit-to-viewport script (section 13) shrinks the page
+    /* The mobile fit-to-viewport script (section 14) shrinks the page
        with a transform on narrow screens - never let that leak into
        print/export, which must always render the page at true A4
        scale regardless of the device that triggered it. */
@@ -609,17 +664,27 @@
 <article class="cv-page" lang="it">
 
   <header class="cv-page__header">
-    <h1 class="cv-page__name">Alberto Di Rosa</h1>
-    <div class="contact">
-      <div class="contact__item">
-        <svg viewBox="0 0 100 100" class="icon icon--contact" aria-hidden="true"><use href="#icon-phone"/></svg>
-        <a class="contact__link" href="tel:+393453106180">+39 345 3106180</a>
-      </div>
-      <div class="contact__item">
-        <span class="contact__at" aria-hidden="true">@</span>
-        <a class="contact__link" href="mailto:Alb.Di.Rosa@gmail.com">Alb.Di.Rosa@gmail.com</a>
+    <div class="header__identity">
+      <h1 class="cv-page__name">Alberto Di Rosa</h1>
+      <div class="contact">
+        <div class="contact__item">
+          <svg viewBox="0 0 100 100" class="icon icon--contact" aria-hidden="true"><use href="#icon-phone"/></svg>
+          <a class="contact__link" href="tel:+393453106180">+39 345 3106180</a>
+        </div>
+        <div class="contact__item">
+          <span class="contact__at" aria-hidden="true">@</span>
+          <a class="contact__link" href="mailto:Alb.Di.Rosa@gmail.com">Alb.Di.Rosa@gmail.com</a>
+        </div>
       </div>
     </div>
+    <a class="qr" href="https://albidr.github.io/CV-ADR/">
+      <div class="qr__code">
+        <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Codice QR che rimanda al CV live su albidr.github.io/CV-ADR">
+          <path fill="var(--color-ink)" d="M2 2h7v1h-7zM11 2h1v1h-1zM15 2h1v1h-1zM18 2h4v1h-4zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM15 3h3v1h-3zM19 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h1v1h-1zM13 4h3v1h-3zM18 4h2v1h-2zM21 4h2v1h-2zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM14 5h4v1h-4zM20 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM12 6h1v1h-1zM15 6h2v1h-2zM18 6h3v1h-3zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h5v1h-5zM19 7h4v1h-4zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM11 9h4v1h-4zM16 9h1v1h-1zM19 9h3v1h-3zM2 10h1v1h-1zM5 10h1v1h-1zM7 10h2v1h-2zM10 10h1v1h-1zM14 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM23 10h1v1h-1zM25 10h1v1h-1zM4 11h4v1h-4zM9 11h3v1h-3zM13 11h1v1h-1zM16 11h2v1h-2zM22 11h3v1h-3zM27 11h1v1h-1zM30 11h1v1h-1zM3 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM14 12h1v1h-1zM18 12h2v1h-2zM21 12h1v1h-1zM23 12h1v1h-1zM25 12h5v1h-5zM4 13h1v1h-1zM13 13h1v1h-1zM16 13h2v1h-2zM20 13h2v1h-2zM23 13h1v1h-1zM26 13h1v1h-1zM28 13h2v1h-2zM8 14h2v1h-2zM11 14h4v1h-4zM18 14h1v1h-1zM23 14h2v1h-2zM27 14h1v1h-1zM29 14h2v1h-2zM4 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM17 15h1v1h-1zM19 15h1v1h-1zM21 15h2v1h-2zM2 16h1v1h-1zM4 16h3v1h-3zM8 16h1v1h-1zM11 16h1v1h-1zM13 16h2v1h-2zM17 16h2v1h-2zM20 16h1v1h-1zM24 16h2v1h-2zM27 16h4v1h-4zM2 17h1v1h-1zM6 17h1v1h-1zM11 17h2v1h-2zM14 17h3v1h-3zM18 17h4v1h-4zM23 17h3v1h-3zM27 17h1v1h-1zM29 17h1v1h-1zM3 18h3v1h-3zM8 18h3v1h-3zM12 18h2v1h-2zM15 18h3v1h-3zM22 18h1v1h-1zM29 18h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM10 19h5v1h-5zM17 19h1v1h-1zM20 19h1v1h-1zM23 19h3v1h-3zM27 19h1v1h-1zM30 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM8 20h1v1h-1zM10 20h2v1h-2zM14 20h2v1h-2zM19 20h1v1h-1zM22 20h2v1h-2zM26 20h1v1h-1zM29 20h2v1h-2zM7 21h1v1h-1zM9 21h5v1h-5zM15 21h1v1h-1zM19 21h1v1h-1zM22 21h2v1h-2zM26 21h1v1h-1zM29 21h2v1h-2zM2 22h1v1h-1zM4 22h1v1h-1zM8 22h1v1h-1zM11 22h1v1h-1zM13 22h2v1h-2zM16 22h3v1h-3zM20 22h1v1h-1zM22 22h5v1h-5zM28 22h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM22 23h1v1h-1zM26 23h1v1h-1zM28 23h3v1h-3zM2 24h7v1h-7zM11 24h1v1h-1zM14 24h3v1h-3zM22 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h2v1h-2zM14 25h2v1h-2zM20 25h1v1h-1zM22 25h1v1h-1zM26 25h4v1h-4zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM12 26h2v1h-2zM16 26h1v1h-1zM22 26h5v1h-5zM30 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM21 27h1v1h-1zM24 27h6v1h-6zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM11 28h4v1h-4zM16 28h1v1h-1zM18 28h3v1h-3zM22 28h1v1h-1zM26 28h3v1h-3zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM14 29h1v1h-1zM17 29h6v1h-6zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h3v1h-3zM14 30h1v1h-1zM16 30h1v1h-1zM22 30h3v1h-3zM26 30h2v1h-2zM29 30h1v1h-1z"/>
+        </svg>
+      </div>
+      <p class="qr__label">Scansiona per<br>la versione live</p>
+    </a>
   </header>
 
   <section class="section section--about">
@@ -634,7 +699,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Performance Marketing Specialist</h3>
-        <p class="entry__org">Hidoly</p>
+        <p class="entry__org"><a href="https://www.hidoly.com">Hidoly</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -654,7 +719,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Digital Panel Support Agent</h3>
-        <p class="entry__org">Nielsen</p>
+        <p class="entry__org"><a href="https://www.nielsen.com">Nielsen</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -678,7 +743,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Master's Degree</h3>
-        <p class="entry__org">Erasmus University of Rotterdam (EUR)</p>
+        <p class="entry__org"><a href="https://www.eur.nl/en">Erasmus University of Rotterdam (EUR)</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -689,7 +754,7 @@
             <span>Rotterdam, Netherlands</span>
           </div>
         </div>
-        <p class="entry__course"><strong>Programma:</strong> <span class="entry__course-value">Media, Digitalisation &amp; Social Impact</span></p>
+        <p class="entry__course"><strong>Programma:</strong> <span class="entry__course-value"><a href="https://www.eur.nl/en/master/media-digitalisation-society">Media, Digitalisation &amp; Social Impact</a></span></p>
         <ul class="entry__bullets">
           <li>Tesi: <span class="thesis">"Nudging Towards Smart Cities: A Social Media Perspective on Governance-Aided Nudges"</span>, incentrata su governance basata sui dati, trasformazione digitale e privacy.</li>
         </ul>
@@ -697,7 +762,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Bachelor's Degree</h3>
-        <p class="entry__org">University of Amsterdam (UvA)</p>
+        <p class="entry__org"><a href="https://www.uva.nl/en">University of Amsterdam (UvA)</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -708,7 +773,7 @@
             <span>Amsterdam, Netherlands</span>
           </div>
         </div>
-        <p class="entry__course"><strong>Programma:</strong> <span class="entry__course-value">Media and Information</span></p>
+        <p class="entry__course"><strong>Programma:</strong> <span class="entry__course-value"><a href="https://www.uva.nl/en/programmes/bachelors/media-and-information/media-and-information.html?cb">Media and Information</a></span></p>
         <ul class="entry__bullets">
           <li>Tesi: <span class="thesis">"Expression &amp; Deployment of 'Authenticity' within Social Media Platforms"</span>, sul ruolo dei social media nella presentazione autentica di sé.</li>
         </ul>
@@ -797,7 +862,7 @@
       </div>
 
       <div class="addexp">
-        <p class="addexp__header"><span class="addexp__title">Stage</span> - <span class="addexp__org">Groupon Italia</span></p>
+        <p class="addexp__header"><span class="addexp__title">Stage</span> - <span class="addexp__org"><a href="https://www.groupon.it">Groupon Italia</a></span></p>
         <div class="addexp__meta">
           <div class="addexp__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -812,17 +877,6 @@
       </div>
 
     </section>
-
-    <div class="qr-wrap">
-      <div class="qr">
-        <div class="qr__code">
-          <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Codice QR che rimanda al CV live su albidr.github.io/CV-ADR">
-            <path fill="var(--color-ink)" d="M2 2h7v1h-7zM11 2h1v1h-1zM15 2h1v1h-1zM18 2h4v1h-4zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM15 3h3v1h-3zM19 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h1v1h-1zM13 4h3v1h-3zM18 4h2v1h-2zM21 4h2v1h-2zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM14 5h4v1h-4zM20 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM12 6h1v1h-1zM15 6h2v1h-2zM18 6h3v1h-3zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h5v1h-5zM19 7h4v1h-4zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM11 9h4v1h-4zM16 9h1v1h-1zM19 9h3v1h-3zM2 10h1v1h-1zM5 10h1v1h-1zM7 10h2v1h-2zM10 10h1v1h-1zM14 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM23 10h1v1h-1zM25 10h1v1h-1zM4 11h4v1h-4zM9 11h3v1h-3zM13 11h1v1h-1zM16 11h2v1h-2zM22 11h3v1h-3zM27 11h1v1h-1zM30 11h1v1h-1zM3 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM14 12h1v1h-1zM18 12h2v1h-2zM21 12h1v1h-1zM23 12h1v1h-1zM25 12h5v1h-5zM4 13h1v1h-1zM13 13h1v1h-1zM16 13h2v1h-2zM20 13h2v1h-2zM23 13h1v1h-1zM26 13h1v1h-1zM28 13h2v1h-2zM8 14h2v1h-2zM11 14h4v1h-4zM18 14h1v1h-1zM23 14h2v1h-2zM27 14h1v1h-1zM29 14h2v1h-2zM4 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM17 15h1v1h-1zM19 15h1v1h-1zM21 15h2v1h-2zM2 16h1v1h-1zM4 16h3v1h-3zM8 16h1v1h-1zM11 16h1v1h-1zM13 16h2v1h-2zM17 16h2v1h-2zM20 16h1v1h-1zM24 16h2v1h-2zM27 16h4v1h-4zM2 17h1v1h-1zM6 17h1v1h-1zM11 17h2v1h-2zM14 17h3v1h-3zM18 17h4v1h-4zM23 17h3v1h-3zM27 17h1v1h-1zM29 17h1v1h-1zM3 18h3v1h-3zM8 18h3v1h-3zM12 18h2v1h-2zM15 18h3v1h-3zM22 18h1v1h-1zM29 18h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM10 19h5v1h-5zM17 19h1v1h-1zM20 19h1v1h-1zM23 19h3v1h-3zM27 19h1v1h-1zM30 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM8 20h1v1h-1zM10 20h2v1h-2zM14 20h2v1h-2zM19 20h1v1h-1zM22 20h2v1h-2zM26 20h1v1h-1zM29 20h2v1h-2zM7 21h1v1h-1zM9 21h5v1h-5zM15 21h1v1h-1zM19 21h1v1h-1zM22 21h2v1h-2zM26 21h1v1h-1zM29 21h2v1h-2zM2 22h1v1h-1zM4 22h1v1h-1zM8 22h1v1h-1zM11 22h1v1h-1zM13 22h2v1h-2zM16 22h3v1h-3zM20 22h1v1h-1zM22 22h5v1h-5zM28 22h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM22 23h1v1h-1zM26 23h1v1h-1zM28 23h3v1h-3zM2 24h7v1h-7zM11 24h1v1h-1zM14 24h3v1h-3zM22 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h2v1h-2zM14 25h2v1h-2zM20 25h1v1h-1zM22 25h1v1h-1zM26 25h4v1h-4zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM12 26h2v1h-2zM16 26h1v1h-1zM22 26h5v1h-5zM30 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM21 27h1v1h-1zM24 27h6v1h-6zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM11 28h4v1h-4zM16 28h1v1h-1zM18 28h3v1h-3zM22 28h1v1h-1zM26 28h3v1h-3zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM14 29h1v1h-1zM17 29h6v1h-6zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h3v1h-3zM14 30h1v1h-1zM16 30h1v1h-1zM22 30h3v1h-3zM26 30h2v1h-2zM29 30h1v1h-1z"/>
-          </svg>
-        </div>
-        <p class="qr__label">Scansiona per la versione live</p>
-      </div>
-    </div>
   </div>
 </article>
 
@@ -831,17 +885,27 @@
 <article class="cv-page" lang="en">
 
   <header class="cv-page__header">
-    <h1 class="cv-page__name">Alberto Di Rosa</h1>
-    <div class="contact">
-      <div class="contact__item">
-        <svg viewBox="0 0 100 100" class="icon icon--contact" aria-hidden="true"><use href="#icon-phone"/></svg>
-        <a class="contact__link" href="tel:+393453106180">+39 345 3106180</a>
-      </div>
-      <div class="contact__item">
-        <span class="contact__at" aria-hidden="true">@</span>
-        <a class="contact__link" href="mailto:Alb.Di.Rosa@gmail.com">Alb.Di.Rosa@gmail.com</a>
+    <div class="header__identity">
+      <h1 class="cv-page__name">Alberto Di Rosa</h1>
+      <div class="contact">
+        <div class="contact__item">
+          <svg viewBox="0 0 100 100" class="icon icon--contact" aria-hidden="true"><use href="#icon-phone"/></svg>
+          <a class="contact__link" href="tel:+393453106180">+39 345 3106180</a>
+        </div>
+        <div class="contact__item">
+          <span class="contact__at" aria-hidden="true">@</span>
+          <a class="contact__link" href="mailto:Alb.Di.Rosa@gmail.com">Alb.Di.Rosa@gmail.com</a>
+        </div>
       </div>
     </div>
+    <a class="qr" href="https://albidr.github.io/CV-ADR/">
+      <div class="qr__code">
+        <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="QR code linking to the live CV at albidr.github.io/CV-ADR">
+          <path fill="var(--color-ink)" d="M2 2h7v1h-7zM11 2h1v1h-1zM15 2h1v1h-1zM18 2h4v1h-4zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM15 3h3v1h-3zM19 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h1v1h-1zM13 4h3v1h-3zM18 4h2v1h-2zM21 4h2v1h-2zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM14 5h4v1h-4zM20 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM12 6h1v1h-1zM15 6h2v1h-2zM18 6h3v1h-3zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h5v1h-5zM19 7h4v1h-4zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM11 9h4v1h-4zM16 9h1v1h-1zM19 9h3v1h-3zM2 10h1v1h-1zM5 10h1v1h-1zM7 10h2v1h-2zM10 10h1v1h-1zM14 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM23 10h1v1h-1zM25 10h1v1h-1zM4 11h4v1h-4zM9 11h3v1h-3zM13 11h1v1h-1zM16 11h2v1h-2zM22 11h3v1h-3zM27 11h1v1h-1zM30 11h1v1h-1zM3 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM14 12h1v1h-1zM18 12h2v1h-2zM21 12h1v1h-1zM23 12h1v1h-1zM25 12h5v1h-5zM4 13h1v1h-1zM13 13h1v1h-1zM16 13h2v1h-2zM20 13h2v1h-2zM23 13h1v1h-1zM26 13h1v1h-1zM28 13h2v1h-2zM8 14h2v1h-2zM11 14h4v1h-4zM18 14h1v1h-1zM23 14h2v1h-2zM27 14h1v1h-1zM29 14h2v1h-2zM4 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM17 15h1v1h-1zM19 15h1v1h-1zM21 15h2v1h-2zM2 16h1v1h-1zM4 16h3v1h-3zM8 16h1v1h-1zM11 16h1v1h-1zM13 16h2v1h-2zM17 16h2v1h-2zM20 16h1v1h-1zM24 16h2v1h-2zM27 16h4v1h-4zM2 17h1v1h-1zM6 17h1v1h-1zM11 17h2v1h-2zM14 17h3v1h-3zM18 17h4v1h-4zM23 17h3v1h-3zM27 17h1v1h-1zM29 17h1v1h-1zM3 18h3v1h-3zM8 18h3v1h-3zM12 18h2v1h-2zM15 18h3v1h-3zM22 18h1v1h-1zM29 18h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM10 19h5v1h-5zM17 19h1v1h-1zM20 19h1v1h-1zM23 19h3v1h-3zM27 19h1v1h-1zM30 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM8 20h1v1h-1zM10 20h2v1h-2zM14 20h2v1h-2zM19 20h1v1h-1zM22 20h2v1h-2zM26 20h1v1h-1zM29 20h2v1h-2zM7 21h1v1h-1zM9 21h5v1h-5zM15 21h1v1h-1zM19 21h1v1h-1zM22 21h2v1h-2zM26 21h1v1h-1zM29 21h2v1h-2zM2 22h1v1h-1zM4 22h1v1h-1zM8 22h1v1h-1zM11 22h1v1h-1zM13 22h2v1h-2zM16 22h3v1h-3zM20 22h1v1h-1zM22 22h5v1h-5zM28 22h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM22 23h1v1h-1zM26 23h1v1h-1zM28 23h3v1h-3zM2 24h7v1h-7zM11 24h1v1h-1zM14 24h3v1h-3zM22 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h2v1h-2zM14 25h2v1h-2zM20 25h1v1h-1zM22 25h1v1h-1zM26 25h4v1h-4zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM12 26h2v1h-2zM16 26h1v1h-1zM22 26h5v1h-5zM30 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM21 27h1v1h-1zM24 27h6v1h-6zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM11 28h4v1h-4zM16 28h1v1h-1zM18 28h3v1h-3zM22 28h1v1h-1zM26 28h3v1h-3zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM14 29h1v1h-1zM17 29h6v1h-6zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h3v1h-3zM14 30h1v1h-1zM16 30h1v1h-1zM22 30h3v1h-3zM26 30h2v1h-2zM29 30h1v1h-1z"/>
+        </svg>
+      </div>
+      <p class="qr__label">Scan for the<br>live version</p>
+    </a>
   </header>
 
   <section class="section section--about">
@@ -856,7 +920,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Performance Marketing Specialist</h3>
-        <p class="entry__org">Hidoly</p>
+        <p class="entry__org"><a href="https://www.hidoly.com">Hidoly</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -876,7 +940,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Digital Panel Support Agent</h3>
-        <p class="entry__org">Nielsen</p>
+        <p class="entry__org"><a href="https://www.nielsen.com">Nielsen</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -900,7 +964,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Master's Degree</h3>
-        <p class="entry__org">Erasmus University of Rotterdam (EUR)</p>
+        <p class="entry__org"><a href="https://www.eur.nl/en">Erasmus University of Rotterdam (EUR)</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -911,7 +975,7 @@
             <span>Rotterdam, Netherlands</span>
           </div>
         </div>
-        <p class="entry__course"><strong>Course:</strong> <span class="entry__course-value">Media, Digitalisation &amp; Social Impact</span></p>
+        <p class="entry__course"><strong>Course:</strong> <span class="entry__course-value"><a href="https://www.eur.nl/en/master/media-digitalisation-society">Media, Digitalisation &amp; Social Impact</a></span></p>
         <ul class="entry__bullets">
           <li>Thesis: <span class="thesis">"Nudging Towards Smart Cities: A Social Media Perspective on Governance-Aided Nudges"</span>, focused on data-driven governance, digital transformation, and privacy.</li>
         </ul>
@@ -919,7 +983,7 @@
 
       <div class="entry">
         <h3 class="entry__title">Bachelor's Degree</h3>
-        <p class="entry__org">University of Amsterdam (UvA)</p>
+        <p class="entry__org"><a href="https://www.uva.nl/en">University of Amsterdam (UvA)</a></p>
         <div class="entry__meta">
           <div class="entry__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -930,7 +994,7 @@
             <span>Amsterdam, Netherlands</span>
           </div>
         </div>
-        <p class="entry__course"><strong>Course:</strong> <span class="entry__course-value">Media and Information</span></p>
+        <p class="entry__course"><strong>Course:</strong> <span class="entry__course-value"><a href="https://www.uva.nl/en/programmes/bachelors/media-and-information/media-and-information.html?cb">Media and Information</a></span></p>
         <ul class="entry__bullets">
           <li>Thesis: <span class="thesis">"Expression &amp; Deployment of 'Authenticity' within Social Media Platforms"</span>, on social media's role in shaping authentic self-presentation.</li>
         </ul>
@@ -1019,7 +1083,7 @@
       </div>
 
       <div class="addexp">
-        <p class="addexp__header"><span class="addexp__title">Internship</span> - <span class="addexp__org">Groupon Italia</span></p>
+        <p class="addexp__header"><span class="addexp__title">Internship</span> - <span class="addexp__org"><a href="https://www.groupon.it">Groupon Italia</a></span></p>
         <div class="addexp__meta">
           <div class="addexp__meta-item">
             <svg viewBox="0 0 100 100" class="icon icon--meta" aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -1034,17 +1098,6 @@
       </div>
 
     </section>
-
-    <div class="qr-wrap">
-      <div class="qr">
-        <div class="qr__code">
-          <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="QR code linking to the live CV at albidr.github.io/CV-ADR">
-            <path fill="var(--color-ink)" d="M2 2h7v1h-7zM11 2h1v1h-1zM15 2h1v1h-1zM18 2h4v1h-4zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM15 3h3v1h-3zM19 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h1v1h-1zM13 4h3v1h-3zM18 4h2v1h-2zM21 4h2v1h-2zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM14 5h4v1h-4zM20 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM12 6h1v1h-1zM15 6h2v1h-2zM18 6h3v1h-3zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h5v1h-5zM19 7h4v1h-4zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM11 9h4v1h-4zM16 9h1v1h-1zM19 9h3v1h-3zM2 10h1v1h-1zM5 10h1v1h-1zM7 10h2v1h-2zM10 10h1v1h-1zM14 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM23 10h1v1h-1zM25 10h1v1h-1zM4 11h4v1h-4zM9 11h3v1h-3zM13 11h1v1h-1zM16 11h2v1h-2zM22 11h3v1h-3zM27 11h1v1h-1zM30 11h1v1h-1zM3 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM14 12h1v1h-1zM18 12h2v1h-2zM21 12h1v1h-1zM23 12h1v1h-1zM25 12h5v1h-5zM4 13h1v1h-1zM13 13h1v1h-1zM16 13h2v1h-2zM20 13h2v1h-2zM23 13h1v1h-1zM26 13h1v1h-1zM28 13h2v1h-2zM8 14h2v1h-2zM11 14h4v1h-4zM18 14h1v1h-1zM23 14h2v1h-2zM27 14h1v1h-1zM29 14h2v1h-2zM4 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM13 15h1v1h-1zM17 15h1v1h-1zM19 15h1v1h-1zM21 15h2v1h-2zM2 16h1v1h-1zM4 16h3v1h-3zM8 16h1v1h-1zM11 16h1v1h-1zM13 16h2v1h-2zM17 16h2v1h-2zM20 16h1v1h-1zM24 16h2v1h-2zM27 16h4v1h-4zM2 17h1v1h-1zM6 17h1v1h-1zM11 17h2v1h-2zM14 17h3v1h-3zM18 17h4v1h-4zM23 17h3v1h-3zM27 17h1v1h-1zM29 17h1v1h-1zM3 18h3v1h-3zM8 18h3v1h-3zM12 18h2v1h-2zM15 18h3v1h-3zM22 18h1v1h-1zM29 18h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM10 19h5v1h-5zM17 19h1v1h-1zM20 19h1v1h-1zM23 19h3v1h-3zM27 19h1v1h-1zM30 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM8 20h1v1h-1zM10 20h2v1h-2zM14 20h2v1h-2zM19 20h1v1h-1zM22 20h2v1h-2zM26 20h1v1h-1zM29 20h2v1h-2zM7 21h1v1h-1zM9 21h5v1h-5zM15 21h1v1h-1zM19 21h1v1h-1zM22 21h2v1h-2zM26 21h1v1h-1zM29 21h2v1h-2zM2 22h1v1h-1zM4 22h1v1h-1zM8 22h1v1h-1zM11 22h1v1h-1zM13 22h2v1h-2zM16 22h3v1h-3zM20 22h1v1h-1zM22 22h5v1h-5zM28 22h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM22 23h1v1h-1zM26 23h1v1h-1zM28 23h3v1h-3zM2 24h7v1h-7zM11 24h1v1h-1zM14 24h3v1h-3zM22 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h2v1h-2zM14 25h2v1h-2zM20 25h1v1h-1zM22 25h1v1h-1zM26 25h4v1h-4zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM12 26h2v1h-2zM16 26h1v1h-1zM22 26h5v1h-5zM30 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h3v1h-3zM16 27h2v1h-2zM19 27h1v1h-1zM21 27h1v1h-1zM24 27h6v1h-6zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM11 28h4v1h-4zM16 28h1v1h-1zM18 28h3v1h-3zM22 28h1v1h-1zM26 28h3v1h-3zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM14 29h1v1h-1zM17 29h6v1h-6zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h3v1h-3zM14 30h1v1h-1zM16 30h1v1h-1zM22 30h3v1h-3zM26 30h2v1h-2zM29 30h1v1h-1z"/>
-          </svg>
-        </div>
-        <p class="qr__label">Scan for the live version</p>
-      </div>
-    </div>
   </div>
 </article>
 
@@ -1132,7 +1185,7 @@
 </script>
 
 <!-- =========================================================
-     13. MOBILE FIT-TO-VIEWPORT (screen-only)
+     14. MOBILE FIT-TO-VIEWPORT (screen-only)
      The page is a fixed physical A4 sheet (~794px wide) - correct
      for print/export, but wider than most phones. Without this, a
      narrow viewport doesn't reflow the page (it has no responsive
@@ -1159,7 +1212,7 @@
       // read even after a previous call scaled this same element.
       var pageW = page.offsetWidth;
       var pageH = page.offsetHeight;
-      var margin = 24;
+      var margin = 32;
       var scale = Math.min(1, (window.innerWidth - margin) / pageW);
       if(scale >= 1){
         page.style.transform = '';
