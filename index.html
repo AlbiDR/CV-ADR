@@ -436,12 +436,24 @@
      + contact line), so with the header's align-items:center the
      code's top and bottom edge land flush with that block's, rather
      than just looking roughly centered next to it. */
+  /* True transparency (module color following the page's own theme
+     tokens) is what this looked like before - reverted because a
+     scanner needs dark-on-light contrast to read the code at all,
+     confirmed by decoding it with two independent engines (OpenCV,
+     zbar): both fail on the inverted light-on-dark rendering dark
+     mode produced. A light backing is unavoidable, so the fix here
+     is to make it read as a deliberately soft, glowing card rather
+     than a flat cut-out sticker - tight padding, a large corner
+     radius, and a diffuse shadow that feathers the edge into the
+     page instead of a hard line. In light mode the backing already
+     matches the page color, so none of this is visible there. */
   .qr__code{
     width:53px;
     height:53px;
-    padding:3px;
+    padding:2px;
     background:var(--qr-bg);
-    border-radius:8px;
+    border-radius:12px;
+    box-shadow:0 0 14px 3px rgba(255,255,255,.22);
     print-color-adjust:exact;
     -webkit-print-color-adjust:exact;
   }
