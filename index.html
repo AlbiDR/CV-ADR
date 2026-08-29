@@ -421,7 +421,11 @@
     color:inherit;
     text-decoration:none;
   }
-  .qr__code{ width:44px; height:44px; }
+  /* Matches the measured rendered height of .header__identity (name
+     + contact line), so with the header's align-items:center the
+     code's top and bottom edge land flush with that block's, rather
+     than just looking roughly centered next to it. */
+  .qr__code{ width:53px; height:53px; }
   .qr__code svg{ display:block; width:100%; height:100%; }
 
   /* =========================================================
